@@ -999,6 +999,41 @@ public class RgwAdminImplTest extends BaseTest {
   }
 
   @Test
+  public void disableSpecificBucketQuota() {
+    testWithAUser(
+        (v) -> {
+          String userId = v.getUserId();
+
+          AmazonS3 s3 =
+              createS3(
+                  v.getS3Credentials().get(0).getAccessKey(),
+                  v.getS3Credentials().get(0).getSecretKey());
+          String bucketName = userId.toLowerCase();
+          s3.createBucket(bucketName);
+
+          Quota quota;
+
+          // set quota
+          RGW_ADMIN.setIndividualBucketQuota(userId, bucketName, 1, 1);
+
+          // default false
+          quota = RGW_ADMIN.getBucketInfo(bucketName).get().getBucketQuota();
+          assertEquals(true, quota.getEnabled());
+          assertEquals(Long.valueOf(1), quota.getMaxObjects());
+          assertEquals(Long.valueOf(1), quota.getMaxSizeKb());
+
+          // disable quota
+          RGW_ADMIN.disableIndividualBucketQuota(userId, bucketName);
+
+          // not shown by getBucketInfo()
+          quota = RGW_ADMIN.getBucketInfo(bucketName).get().getBucketQuota();
+          assertEquals(false, quota.getEnabled());
+          assertEquals(Long.valueOf(-1), quota.getMaxObjects());
+          assertEquals(Long.valueOf(-1), quota.getMaxSizeKb());
+        });
+    }
+
+  @Test
   public void getObjectPolicy() {
     testWithAUser(
         (v) -> {

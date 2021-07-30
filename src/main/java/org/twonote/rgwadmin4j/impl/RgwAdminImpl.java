@@ -797,9 +797,28 @@ public class RgwAdminImpl implements RgwAdmin {
 
     Request request =
         new Request.Builder()
-            .put(RequestBody.create(null, buildQuotaConfig(maxObjects, maxSizeKB)))
+            .put(RequestBody.create(null, buildQuotaConfig(true, maxObjects, maxSizeKB)))
             .url(urlBuilder.build())
             .build();
+
+    safeCall(request);
+  }
+
+  @Override
+  public void disableIndividualBucketQuota(String userId, String bucket) {
+    HttpUrl.Builder urlBuilder =
+        HttpUrl.parse(endpoint)
+             .newBuilder()
+             .addPathSegment("bucket")
+             .query("quota")
+             .addQueryParameter("uid", userId)
+             .addQueryParameter("bucket", bucket);
+
+    Request request =
+        new Request.Builder()
+             .put(RequestBody.create(null, buildQuotaConfig(false, -1, -1)))
+             .url(urlBuilder.build())
+             .build();
 
     safeCall(request);
   }
@@ -825,19 +844,19 @@ public class RgwAdminImpl implements RgwAdmin {
 
     Request request =
         new Request.Builder()
-            .put(RequestBody.create(null, buildQuotaConfig(maxObjects, maxSizeKB)))
+            .put(RequestBody.create(null, buildQuotaConfig(true, maxObjects, maxSizeKB)))
             .url(urlBuilder.build())
             .build();
 
     safeCall(request);
   }
 
-  private String buildQuotaConfig(long maxObjects, long maxSizeKB) {
+  private String buildQuotaConfig(boolean enabled, long maxObjects, long maxSizeKB) {
     return gson.toJson(
         ImmutableMap.of(
             "max_objects", String.valueOf(maxObjects),
             "max_size_kb", String.valueOf(maxSizeKB),
-            "enabled", "true"));
+            "enabled", String.valueOf(enabled)));
   }
 
   @Override

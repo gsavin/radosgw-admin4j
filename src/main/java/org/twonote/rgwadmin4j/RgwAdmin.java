@@ -569,6 +569,14 @@ public interface RgwAdmin {
   void setIndividualBucketQuota(String userId, String bucket, long maxObjects, long maxSizeKB);
 
   /**
+   * Disable a quota on a given bucket.
+   *
+   * @param userId     The bucket owner to set quota.
+   * @param bucket     The bucket to set quota.
+   */
+  void disableIndividualBucketQuota(String userId, String bucket);
+
+  /**
    * Set or modify quotas on all buckets owned by a user.
    *
    * @param userId     The bucket owner to set quota.
